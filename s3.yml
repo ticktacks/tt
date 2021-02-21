@@ -1,0 +1,25 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: CloudFormation template for creating an s3 bucket
+Resources:
+  S3Bucket:
+    DeletionPolicy: Retain
+    Type: 'AWS::S3::Bucket'
+    Description: Creation of s3 bucket
+    Properties:
+      BucketName: s3-tt-templates
+      VersioningConfiguration:
+        Status: Enabled
+      AccessControl: Private
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+Outputs:
+  S3BucketName:
+    Description: S3 Bucket
+    Value: !Ref 'S3Bucket'

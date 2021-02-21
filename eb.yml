@@ -1,0 +1,85 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: ElasticBeanstalk cloudformation template
+
+Parameters:
+  EBVPCID:
+    Description: A custom VPC ID for Elastic Beanstalk Deployment
+    Type: String
+
+  EC2Subs:
+    Description: The Elastic Beanstalk EC2 subnets (Private)
+    Type: String
+
+  ELBSubs:
+    Description: The Elastic Beanstalk ELB subnets (Public)
+    Type: String
+
+  ASGMinSize:
+    Description: Auto Scaling Group Minimum Size
+    Type: String
+
+  ASGMaxSize:
+    Description: Auto Scaling Group Maximum Size
+    Type: String
+
+Resources:
+  nodeApplication:
+    Type: AWS::ElasticBeanstalk::Application
+    Properties:
+      ApplicationName: TT Elastic Beanstalk Application-1
+      Description: Cloudformation - TT test Application
+
+  nodeApplicationVersion:
+    Type: AWS::ElasticBeanstalk::ApplicationVersion
+    Properties:
+      ApplicationName: !Ref nodeApplication
+      Description: Initial Version
+      SourceBundle:
+        S3Bucket: s3-tt-templates
+        S3Key: opserver.zip
+
+  nodeEnvironment:
+    Type: AWS::ElasticBeanstalk::Environment
+    Properties:
+      ApplicationName: !Ref nodeApplication
+      SolutionStackName: 64bit Windows Server 2019 v2.6.3 running IIS 10.0
+      OptionSettings:
+        - Namespace: aws:autoscaling:launchconfiguration
+          OptionName: InstanceType
+          Value: t3a.medium
+        - Namespace: aws:autoscaling:launchconfiguration
+          OptionName: IamInstanceProfile
+          Value: aws-elasticbeanstalk-ec2-role
+        - Namespace: aws:ec2:vpc
+          OptionName: VPCId
+          Value: !Ref EBVPCID
+        - Namespace: aws:ec2:vpc
+          OptionName: Subnets
+          Value: !Ref EC2Subs
+        - Namespace: aws:ec2:vpc
+          OptionName: ELBSubnets
+          Value: !Ref ELBSubs
+        - Namespace: aws:ec2:vpc
+          OptionName: ELBScheme
+          Value: public
+        - Namespace: aws:autoscaling:asg
+          OptionName: MinSize
+          Value: !Ref ASGMinSize
+        - Namespace: aws:autoscaling:asg
+          OptionName: MaxSize
+          Value: !Ref ASGMaxSize
+
+      VersionLabel: !Ref nodeApplicationVersion
+
+Outputs:
+  nodeApplication:
+    Description: Application Name
+    Value: !Ref nodeApplication
+
+  nodeApplicationVersion:
+    Description: Application Version
+    Value: !Ref nodeApplicationVersion
+
+  nodeEnvironment:
+    Description: Environment Name
+    Value: !Ref nodeEnvironment

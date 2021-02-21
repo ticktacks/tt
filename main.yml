@@ -1,0 +1,33 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: This is the root stack CloudFormation templates
+
+Resources:
+  VPCNestedCall:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: https://s3-tt-templates.s3-ap-southeast-2.amazonaws.com/vpc.yml
+      Parameters:
+        EnvironmentName: TT
+        VpcCIDR: 192.168.0.0/16
+        PublicSubnet1CIDR: 192.168.100.0/24
+        PublicSubnet2CIDR: 192.168.110.0/24
+        PrivateSubnet1CIDR: 192.168.200.0/24
+        PrivateSubnet2CIDR: 192.168.210.0/24
+      TimeoutInMinutes: 20
+
+  EBNestedCall:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: https://s3-tt-templates.s3-ap-southeast-2.amazonaws.com/eb.yml
+      Parameters:
+        EBVPCID: !GetAtt VPCNestedCall.Outputs.VPC
+        EC2Subs: !GetAtt VPCNestedCall.Outputs.PrivateSubnets
+        ELBSubs: !GetAtt VPCNestedCall.Outputs.PublicSubnets
+        ASGMinSize: 2
+        ASGMaxSize: 3
+      TimeoutInMinutes: 20
+Outputs:
+  StackRef:
+    Value: !Ref VPCNestedCall
+  OutputFromNestedStack:
+    Value: !GetAtt VPCNestedCall.Outputs.VPC
